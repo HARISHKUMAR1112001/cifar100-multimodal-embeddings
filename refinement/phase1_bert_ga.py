@@ -16,6 +16,10 @@ Input:  best_skipgram_523words.pth  (Stage 1 trained model)
 Output: phase1_refined.pth          (embeddings with Phase 1 corrections)
 """
 
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'src'))
+del _sys, _os
+
 import torch
 import numpy as np
 from transformers import BertTokenizer, BertModel

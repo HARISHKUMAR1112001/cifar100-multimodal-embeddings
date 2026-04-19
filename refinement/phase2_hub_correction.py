@@ -7,6 +7,10 @@ Strategy:
 3. Target singleton/small classes with special handling
 """
 
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'src'))
+del _sys, _os
+
 import torch
 import numpy as np
 from tqdm import tqdm

@@ -16,6 +16,10 @@ Strategy (Orthogonal Diversification):
 Input:  phase4_refined.pth           (Phase 4 output)
 Output: best_skipgram_523words.pth   (final refined model -- used in paper)
 """
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'src'))
+del _sys, _os
+
 import numpy as np
 import torch
 

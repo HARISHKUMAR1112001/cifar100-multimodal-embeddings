@@ -1,3 +1,8 @@
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'src'))
+_sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+del _sys, _os
+
 import numpy as np
 from collections import defaultdict
 import torch

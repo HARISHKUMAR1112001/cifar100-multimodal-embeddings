@@ -135,7 +135,7 @@ def load_embeddings_core(
     except FileNotFoundError:
         raise FileNotFoundError(
             f"Checkpoint file not found: {checkpoint_path}\n"
-            f"Please run final_check.py first to generate this file."
+            f"Please run train_best_model.py first to generate this file."
         )
     except Exception as e:
         raise RuntimeError(f"Error loading checkpoint: {e}")
@@ -202,7 +202,7 @@ def load_embeddings_core(
 # ============================================================================
 
 # DO NOT CHANGE THIS FUNCTION's signature
-def build_my_embeddings(checkpoint_path: str = "best_skipgram_523words.pth") -> Tuple[Dict[str, int], np.ndarray]:
+def build_my_embeddings(checkpoint_path: str = "models/best_skipgram_523words.pth") -> Tuple[Dict[str, int], np.ndarray]:
     """
     Load and return your trained Skip-gram embeddings.
     

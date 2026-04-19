@@ -3,6 +3,10 @@ Phase 4: Final Push - Target the Last 8 Stubborn Words
 =====================================================
 Strategy: Ultra-targeted fixes for the most persistent contamination issues
 """
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'src'))
+del _sys, _os
+
 import numpy as np
 import torch
 from skipgram_trainer import SkipGramModel

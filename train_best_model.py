@@ -43,6 +43,10 @@ Usage
 
 """
 
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), 'src'))
+del _sys, _os
+
 import os
 import sys
 import random
@@ -265,7 +269,7 @@ CONFIG_F = dict(
     rare_threshold  = 0.00015, # keep top ~0.015% word frequency
 )
 
-OUTPUT_MODEL = "best_skipgram_523words.pth"
+OUTPUT_MODEL = "models/best_skipgram_523words.pth"
 
 
 def train(skip_download: bool = False) -> None:

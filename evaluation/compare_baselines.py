@@ -5,9 +5,9 @@ Compares our 5-hop Skip-Gram model against three standard baselines on the
 CIFAR-100 semantic clustering task.
 
 Baselines:
-  1. GloVe 100d  — Wikipedia + Gigaword, 6B tokens  (small, standard)
-  2. GloVe 300d  — Wikipedia + Gigaword, 6B tokens  (larger capacity)
-  3. fastText 300d — Common Crawl, 600B tokens       (strongest general-purpose;
+  1. GloVe 100d   Wikipedia + Gigaword, 6B tokens  (small, standard)
+  2. GloVe 300d   Wikipedia + Gigaword, 6B tokens  (larger capacity)
+  3. fastText 300d  Common Crawl, 600B tokens       (strongest general-purpose;
                      handles subword / compound terms natively)
 
 All models are evaluated with identical metrics:
@@ -24,13 +24,18 @@ Usage:
   python compare_baselines.py --no-300       # skip both 300d models
 """
 
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'src'))
+_sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+del _sys, _os
+
 import argparse
 import sys
 import numpy as np
 import gensim.downloader as api
 from collections import defaultdict
 
-# ── local imports ──────────────────────────────────────────────────────────────
+#  local imports 
 from skipgram_embeddings import build_my_embeddings
 from skipgram_trainer import find_similar_words
 
@@ -333,14 +338,14 @@ def save_bar_chart(results, k_values=(1, 3, 5, 10)):
         ax.set_ylim(0, 110); ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f'{y:.0f}%'))
         ax.legend(fontsize=9); ax.grid(axis='y', alpha=0.3)
 
-        fig.suptitle('CIFAR-100 Semantic Clustering — Baseline Comparison', fontsize=13, fontweight='bold')
+        fig.suptitle('CIFAR-100 Semantic Clustering  Baseline Comparison', fontsize=13, fontweight='bold')
         fig.tight_layout()
         out = 'baseline_comparison.png'
         fig.savefig(out, dpi=150, bbox_inches='tight')
         plt.close()
-        print(f"\n  Chart saved → {out}")
+        print(f"\n  Chart saved  {out}")
     except ImportError:
-        print("  (matplotlib not available — skipping chart)")
+        print("  (matplotlib not available  skipping chart)")
 
 
 def save_heatmap(results):
@@ -373,7 +378,7 @@ def save_heatmap(results):
         out = 'baseline_comparison_heatmap.png'
         fig.savefig(out, dpi=150, bbox_inches='tight')
         plt.close()
-        print(f"  Heatmap saved → {out}")
+        print(f"  Heatmap saved  {out}")
     except ImportError:
         pass
 
@@ -394,20 +399,20 @@ if __name__ == '__main__':
 
     all_results = []
 
-    # ── GloVe 100d ────────────────────────────────────────────────────────────
+    #  GloVe 100d 
     print("\nLoading GloVe 100d (Wikipedia+Gigaword, ~128 MB on first run) ...")
     glove_100 = api.load("glove-wiki-gigaword-100")
     fn_g100   = make_gensim_find_neighbors(glove_100, "GloVe-100d")
     all_results.append(evaluate(fn_g100, "GloVe 100d"))
 
-    # ── GloVe 300d ────────────────────────────────────────────────────────────
+    #  GloVe 300d 
     if not args.no_300:
         print("\nLoading GloVe 300d (~376 MB on first run) ...")
         glove_300 = api.load("glove-wiki-gigaword-300")
         fn_g300   = make_gensim_find_neighbors(glove_300, "GloVe-300d")
         all_results.append(evaluate(fn_g300, "GloVe 300d"))
 
-    # ── fastText 300d ─────────────────────────────────────────────────────────
+    #  fastText 300d 
     if not args.no_fasttext and not args.no_300:
         print("\nLoading fastText 300d (Common Crawl, ~960 MB on first run) ...")
         print("  [This is the strongest general-purpose baseline]")
@@ -415,12 +420,12 @@ if __name__ == '__main__':
         fn_ft  = make_gensim_find_neighbors(ft_300, "fastText-300d")
         all_results.append(evaluate(fn_ft, "fastText 300d (CC)"))
 
-    # ── Our model ─────────────────────────────────────────────────────────────
+    #  Our model 
     print("\nLoading our model (5-hop Skip-Gram + VG corpus + 5-phase GA) ...")
     fn_ours = make_our_find_neighbors()
     all_results.append(evaluate(fn_ours, "Ours (5-hop VG+GA 128d)"))
 
-    # ── Print results ─────────────────────────────────────────────────────────
+    #  Print results 
     for r in all_results:
         print_result(r)
 
@@ -432,7 +437,7 @@ if __name__ == '__main__':
         save_bar_chart(all_results)
         save_heatmap(all_results)
 
-    # ── Win count summary ─────────────────────────────────────────────────────
+    #  Win count summary 
     print(f"\n{'='*70}")
     print("  WIN SUMMARY (per superclass, which model has highest MRR)")
     print(f"{'='*70}")
