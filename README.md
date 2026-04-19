@@ -50,6 +50,8 @@ refinement to extend visual-grounding Skip-Gram embeddings to all 100 CIFAR-100 
 
 ### 1. Install dependencies
 ```bash
+python3 -m venv venv
+source venv/bin/activate      # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 

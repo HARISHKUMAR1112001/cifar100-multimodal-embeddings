@@ -331,16 +331,17 @@ def train(skip_download: bool = False) -> None:
         'embedding_dim'   : CONFIG_F['embedding_dim'],
         'config'          : CONFIG_F,
     }
+    os.makedirs(os.path.dirname(OUTPUT_MODEL), exist_ok=True)
     torch.save(save_data, OUTPUT_MODEL)
     print(f"\nModel saved: {OUTPUT_MODEL}")
     print(f"  Vocabulary : {len(result['nodes'])} words")
     print(f"  Embeddings : {result['embeddings'].shape}")
     print(f"\nNext steps (Stage 2 -- GA refinement):")
-    print("  python phases/phase1_bert_ga.py")
-    print("  python phases/phase2_hub_correction.py")
-    print("  python phases/phase3_targeted_blending.py")
-    print("  python phases/phase4_bert_guided.py")
-    print("  python phases/phase5_orthogonal_diversify.py")
+    print("  python refinement/phase1_bert_ga.py")
+    print("  python refinement/phase2_hub_correction.py")
+    print("  python refinement/phase3_targeted_blending.py")
+    print("  python refinement/phase4_bert_guided.py")
+    print("  python refinement/phase5_orthogonal_diversify.py")
 
 
 # -----------------------------------------------------------------------------
