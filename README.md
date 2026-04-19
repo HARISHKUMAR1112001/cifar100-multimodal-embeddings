@@ -16,6 +16,7 @@ refinement to extend visual-grounding Skip-Gram embeddings to all 100 CIFAR-100 
 |   +-- skipgram_trainer.py            # SkipGramModel, SkipGramDataset, train_embeddings()
 |   +-- text_network_builder.py        # Text corpus -> co-occurrence graph -> training data
 |   +-- image_encoder.py               # ImageEncoder for ImageNet transfer evaluation
+|   +-- corpus_generator.py            # Generates the augmented VG+CIFAR training corpus
 |
 +-- refinement/                        # 5-phase geometric embedding refinement pipeline
 |   +-- phase1_bert_ga.py              # Phase 1: BERT-guided Genetic Algorithm
@@ -77,9 +78,23 @@ python evaluation/compare_baselines.py      # Comparison vs GloVe and fastText b
 ```
 
 ### Train from scratch
+
 ```bash
-python train_best_model.py                  # Trains Config F (5-hop, lr=0.10, dropout=0.35)
-python train_best_model.py --skip-download  # Skip Visual Genome download if already present
+# Step 1: Generate the training corpus
+# Downloads Visual Genome (~400 MB, cached), generates ~408K synthetic
+# sentences for the 68 missing CIFAR-100 words, saves combined corpus.
+python src/corpus_generator.py --output vg_cifar_combined.txt
+
+# Step 2: Train Config F Skip-Gram model
+# Builds co-occurrence network, trains, saves models/best_skipgram_523words.pth
+python train_best_model.py --corpus vg_cifar_combined.txt
+
+# Step 3 (optional): Run 5-phase refinement pipeline
+python refinement/phase1_bert_ga.py
+python refinement/phase2_hub_correction.py
+python refinement/phase3_targeted_blending.py
+python refinement/phase4_bert_guided.py
+python refinement/phase5_orthogonal_diversify.py
 ```
 
 ---
