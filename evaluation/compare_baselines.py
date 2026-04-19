@@ -1,7 +1,7 @@
 """
 compare_baselines.py
 ====================
-Compares our 5-hop Skip-Gram model against three standard baselines on the
+Compares our 5-hop Skip-Gram model against four standard baselines on the
 CIFAR-100 semantic clustering task.
 
 Baselines:
@@ -9,19 +9,25 @@ Baselines:
   2. GloVe 300d   Wikipedia + Gigaword, 6B tokens  (larger capacity)
   3. fastText 300d  Common Crawl, 600B tokens       (strongest general-purpose;
                      handles subword / compound terms natively)
+  4. SBERT (all-MiniLM-L6-v2)  Sentence-BERT, ~90 MB  (transformer-based;
+                     produces fixed-size sentence/word embeddings;
+                     the strongest contextual baseline this task allows)
 
 All models are evaluated with identical metrics:
   MRR, Precision@K, Recall@K, Hit Rate@K, contamination-free count.
 
-Downloads happen automatically via gensim on first run (one-time):
-  glove-wiki-gigaword-100  ~128 MB
-  glove-wiki-gigaword-300  ~376 MB
-  fasttext-wiki-news-subwords-300  ~960 MB
+Downloads happen automatically on first run (one-time):
+  glove-wiki-gigaword-100            ~128 MB  (gensim)
+  glove-wiki-gigaword-300            ~376 MB  (gensim)
+  fasttext-wiki-news-subwords-300    ~960 MB  (gensim)
+  sentence-transformers/all-MiniLM-L6-v2  ~90 MB  (HuggingFace)
 
 Usage:
-  python compare_baselines.py                # all four models
-  python compare_baselines.py --no-fasttext  # skip fastText (saves download)
-  python compare_baselines.py --no-300       # skip both 300d models
+  python compare_baselines.py                # all five models
+  python compare_baselines.py --no-fasttext  # skip fastText
+  python compare_baselines.py --no-sbert     # skip SBERT
+  python compare_baselines.py --no-300       # skip all 300d models
+  python compare_baselines.py --no-300 --no-sbert  # GloVe 100d + Ours only
 """
 
 import sys as _sys, os as _os
@@ -167,6 +173,49 @@ def evaluate(find_neighbors_fn, model_name, k_values=(1, 3, 5, 10), top_k=15):
     }
 
 # ==============================================================================
+# SBERT BASELINE LOADER
+# ==============================================================================
+
+def make_sbert_find_neighbors(model_name="all-MiniLM-L6-v2"):
+    """
+    Build a find_neighbors function using Sentence-BERT.
+
+    SBERT produces a fixed-size embedding per input phrase. Multi-word CIFAR
+    terms (e.g. 'maple_tree') are passed as natural phrases ('maple tree').
+    Evaluation is over the closed 100-word CIFAR set, identical to all other
+    baselines.
+
+    Requires: pip install sentence-transformers
+    """
+    try:
+        from sentence_transformers import SentenceTransformer
+    except ImportError:
+        print("  [SBERT] sentence-transformers not installed.")
+        print("  Run: pip install sentence-transformers")
+        return None
+
+    print(f"  Loading SBERT '{model_name}' (~90 MB on first run) ...")
+    model = SentenceTransformer(model_name)
+
+    # Convert underscore CIFAR labels to natural phrases for SBERT
+    phrases = [w.replace('_', ' ') for w in ALL_CIFAR100_WORDS]
+    raw_vecs = model.encode(phrases, normalize_embeddings=True, show_progress_bar=False)
+
+    cifar_vecs = {word: raw_vecs[i] for i, word in enumerate(ALL_CIFAR100_WORDS)}
+    print(f"  [SBERT-{model_name}] Coverage: {len(cifar_vecs)}/100")
+
+    def find_neighbors(word, top_k=15):
+        if word not in cifar_vecs:
+            return []
+        q = cifar_vecs[word]
+        sims = [(w, float(np.dot(q, v))) for w, v in cifar_vecs.items() if w != word]
+        sims.sort(key=lambda x: x[1], reverse=True)
+        return sims[:top_k]
+
+    return find_neighbors
+
+
+# ==============================================================================
 # GENSIM BASELINE LOADER
 # ==============================================================================
 
@@ -215,7 +264,16 @@ def make_gensim_find_neighbors(model, label):
 # ==============================================================================
 
 def make_our_find_neighbors():
-    vocab_dict, embs = build_my_embeddings()
+    import os
+    # ensure relative paths (e.g. models/) resolve from repo root regardless
+    # of which directory the script is invoked from
+    _repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    _orig_dir  = os.getcwd()
+    os.chdir(_repo_root)
+    try:
+        vocab_dict, embs = build_my_embeddings()
+    finally:
+        os.chdir(_orig_dir)
     vocab_list = sorted(vocab_dict.keys(), key=lambda w: vocab_dict[w])
     def find_neighbors(word, top_k=15):
         return find_similar_words(word, vocab_list, embs, top_k=top_k)
@@ -389,6 +447,7 @@ def save_heatmap(results):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Compare CIFAR-100 embedding baselines')
     parser.add_argument('--no-fasttext', action='store_true', help='Skip fastText (saves ~960 MB download)')
+    parser.add_argument('--no-sbert',    action='store_true', help='Skip SBERT (saves ~90 MB download)')
     parser.add_argument('--no-300',      action='store_true', help='Skip all 300d models')
     parser.add_argument('--no-charts',   action='store_true', help='Skip saving charts')
     args = parser.parse_args()
@@ -424,6 +483,17 @@ if __name__ == '__main__':
     print("\nLoading our model (5-hop Skip-Gram + VG corpus + 5-phase GA) ...")
     fn_ours = make_our_find_neighbors()
     all_results.append(evaluate(fn_ours, "Ours (5-hop VG+GA 128d)"))
+
+    #  SBERT 
+    if not args.no_sbert:
+        print("\nLoading SBERT all-MiniLM-L6-v2 (transformer sentence encoder, ~90 MB) ...")
+        fn_sbert = make_sbert_find_neighbors("all-MiniLM-L6-v2")
+        if fn_sbert is not None:
+            all_results.append(evaluate(fn_sbert, "SBERT all-MiniLM-L6-v2"))
+        print("\nLoading SBERT all-mpnet-base-v2 (higher capacity, ~420 MB) ...")
+        fn_sbert_large = make_sbert_find_neighbors("all-mpnet-base-v2")
+        if fn_sbert_large is not None:
+            all_results.append(evaluate(fn_sbert_large, "SBERT all-mpnet-base-v2"))
 
     #  Print results 
     for r in all_results:
