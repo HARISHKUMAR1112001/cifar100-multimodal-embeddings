@@ -1,9 +1,10 @@
-# Extending Skip-Gram Word Embeddings to CIFAR-100
+# CIFAR-100 Multimodal Embeddings
 
-Two-stage approach: synthetic corpus augmentation + BERT-guided genetic algorithm
-refinement to extend visual-grounding Skip-Gram embeddings to all 100 CIFAR-100 class labels.
+A full multimodal embedding pipeline for CIFAR-100 — covering text (Skip-Gram), vision (CLIP-style image encoder), and neuro-symbolic reasoning (lab9).
 
-**Final model:** 86.9% MRR | 93/100 perfect-clustering words | 6% contamination | 77.71% ImageNet transfer accuracy
+- **Text embeddings:** synthetic corpus augmentation + BERT-guided genetic algorithm refinement → 86.9% MRR | 93/100 perfect-clustering words
+- **Image encoder:** MobileNetV3-Small + contrastive learning against Skip-Gram embeddings → 77.77% I2T Recall@1
+- **Neuro-symbolic pipeline:** *(coming soon)*
 
 ---
 
