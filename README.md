@@ -40,6 +40,12 @@ refinement to extend visual-grounding Skip-Gram embeddings to all 100 CIFAR-100 
 |   +-- baseline_comparison.png
 |   +-- baseline_comparison_heatmap.png
 |
++-- image_encoder/                     # CLIP-style image encoder (standalone)
+|   +-- lab8.py                        # ImageEncoder model, dataset, training loop
+|   +-- train.py                       # CLI runner to retrain the image encoder
+|   +-- inference.py                   # Load from HuggingFace + predict / predict_tta
+|   +-- report_image_model.md          # Technical report for the image encoder
+|
 +-- train_best_model.py                # End-to-end training script for Config F (best model)
 +-- requirements.txt                   # Python dependencies
 +-- report.md                          # Full project report
@@ -105,6 +111,34 @@ python refinement/phase5_orthogonal_diversify.py
 |---|---|
 | models/best_skipgram_523words.pth | Trained Skip-Gram embeddings after 5-phase refinement (1.2 MB) |
 | models/best_cifar100_projection.pth | Linear projection layer for ImageNet transfer (8.7 MB) |
+
+Both models are also published on HuggingFace:
+- Skip-Gram: [`haripra1112001/visual-skipgram-cifar100`](https://huggingface.co/haripra1112001/visual-skipgram-cifar100)
+- Image encoder: [`haripra1112001/clip-cifar100-mobilenet`](https://huggingface.co/haripra1112001/clip-cifar100-mobilenet)
+
+---
+
+## Image Encoder (`image_encoder/`)
+
+A CLIP-style visual encoder that aligns CIFAR-100 images with the Skip-Gram text embeddings above. Achieves **77.77% Image-to-Text Recall@1** (vs 1% random baseline).
+
+**Quick inference** (downloads checkpoint automatically):
+```bash
+cd image_encoder
+pip install torch torchvision huggingface_hub pillow
+
+# Single image
+python inference.py --image dog.jpg
+
+# 8-view TTA (more accurate)
+python inference.py --image dog.jpg --tta --top_k 3
+```
+
+**Retrain from scratch:**
+```bash
+cd image_encoder
+python train.py --text_emb ../models/best_skipgram_523words.pth
+```
 
 ---
 
