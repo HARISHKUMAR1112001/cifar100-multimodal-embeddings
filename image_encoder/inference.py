@@ -20,7 +20,7 @@ import torchvision.transforms as transforms
 from PIL import Image
 from huggingface_hub import hf_hub_download
 
-from image_encoder.image_helper import ImageEncoder
+from image_helper import ImageEncoder
 
 
 # =============================================================================

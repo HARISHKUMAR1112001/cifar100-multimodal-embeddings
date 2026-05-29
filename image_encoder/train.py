@@ -24,7 +24,7 @@ import torch
 import torch.nn.functional as F
 from torchvision import datasets
 
-from image_encoder.image_helper import (
+from image_helper import (
     ImageEncoder,
     CIFAR100Filtered,
     filter_dataset_indices,

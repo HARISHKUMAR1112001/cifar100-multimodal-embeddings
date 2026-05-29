@@ -41,7 +41,7 @@ refinement to extend visual-grounding Skip-Gram embeddings to all 100 CIFAR-100 
 |   +-- baseline_comparison_heatmap.png
 |
 +-- image_encoder/                     # CLIP-style image encoder (standalone)
-|   +-- lab8.py                        # ImageEncoder model, dataset, training loop
+|   +-- image_helper.py                 # ImageEncoder model, dataset, training loop
 |   +-- train.py                       # CLI runner to retrain the image encoder
 |   +-- inference.py                   # Load from HuggingFace + predict / predict_tta
 |   +-- report_image_model.md          # Technical report for the image encoder
