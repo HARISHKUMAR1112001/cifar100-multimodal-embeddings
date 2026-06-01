@@ -171,7 +171,7 @@ The saved checkpoint stores all information needed to reproduce or continue trai
 | Split | Source | Samples | Purpose |
 |---|---|---|---|
 | Train | CIFAR-100 train | ~40,000 | Contrastive learning |
-| Val | 20% of train (stratified) | ~10,000 | Early stopping |
+| Val | 20% random split of train | ~10,000 | Early stopping |
 | Test | CIFAR-100 test | ~10,000 | Final evaluation only |
 
 The validation split was held out before training and never used for model selection within an epoch. Early stopping used only validation similarity (not loss) as the primary criterion.
@@ -184,15 +184,15 @@ Different augmentation pipelines were used for train and evaluation:
 
 | Transform | Parameters |
 |---|---|
-| RandomResizedCrop(224) | scale=(0.6, 1.0) |
+| RandomResizedCrop(224) | scale=(0.7, 1.0) |
 | RandomHorizontalFlip | p=0.5 |
-| ColorJitter | brightness=0.4, contrast=0.4, saturation=0.4, hue=0.1 |
-| RandomGrayscale | p=0.2 |
+| RandAugment | num_ops=2, magnitude=6 |
+| RandomErasing | p=0.2, scale=(0.02, 0.15) |
 | Normalize | mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225] |
 
 **Evaluation:**
 ```
-Resize(256) → CenterCrop(224) → ToTensor → Normalize
+Resize(224) → ToTensor → Normalize
 ```
 
 ---
